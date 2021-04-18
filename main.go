@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	meta "github.com/google/go-github/v34/github"
 	"github.com/kilwa0/initrepo/github"
+	"log"
 )
 
 func main() {
@@ -15,9 +17,14 @@ func main() {
 	flag.StringVar(&action, "action", "repositories", "usage")
 	flag.StringVar(&host, "host", "", "Github Host")
 	flag.Parse()
+	ctx := context.Background()
 
 	if host == "" {
 		client := github.Connect(token)
+		usr, _, err := client.Users.Get(ctx, "")
+		if err != nil {
+			log.Printf("[ERROR] %s", err)
+		}
 		if action == "repositories" {
 			var repositories []string
 			repositories = github.ListUserRepos(client, user, 10)
@@ -25,7 +32,14 @@ func main() {
 		} else if action == "create" {
 			var repositories *meta.Repository
 			repositories = github.CreateRepo(client, org)
-			fmt.Println(repositories.GetFullName())
+			fmt.Printf(`
+git init
+git add -A
+git commit -m "first commit"
+git branch -M main
+git remote add origin git@github.com:%s/%s.git
+git push -u origin main
+`, *usr.Login, repositories.GetName())
 		} else if action == "delete" {
 			var repositories *meta.Response
 			repositories = github.DeleteRepo(client, org)
@@ -35,6 +49,10 @@ func main() {
 		}
 	} else {
 		client := github.ConnectEnterprise(token, "https://"+host)
+		usr, _, err := client.Users.Get(ctx, "")
+		if err != nil {
+			log.Printf("[ERROR] %s", err)
+		}
 		if action == "repositories" {
 			var repositories []string
 			repositories = github.ListUserRepos(client, user, 10)
@@ -42,7 +60,14 @@ func main() {
 		} else if action == "create" {
 			var repositories *meta.Repository
 			repositories = github.CreateRepo(client, org)
-			fmt.Println(repositories.GetFullName())
+			fmt.Printf(`
+git init
+git add -A
+git commit -m "first commit"
+git branch -M main
+git remote add origin git@%s:%s/%s.git
+git push -u origin main
+`, host, *usr.Login, repositories.GetName())
 		} else if action == "delete" {
 			var repositories *meta.Response
 			repositories = github.DeleteRepo(client, org)
