@@ -27,7 +27,13 @@ func ListUserRepos(client *github.Client, user string, perpage int) []string {
 		}
 	}
 	for index := range allRepos {
-		allReposName = append(allReposName, allRepos[index].GetFullName())
+		user, _, err := client.Users.Get(ctx, "")
+		if err != nil {
+			log.Printf("[ERROR] %s", err)
+		}
+		if allRepos[index].GetFullName() != user.GetLogin()+"/"+user.GetLogin() {
+			allReposName = append(allReposName, allRepos[index].GetFullName())
+		}
 	}
 	return allReposName
 }
