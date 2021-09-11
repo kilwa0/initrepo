@@ -29,7 +29,9 @@ func main() {
 		if action == "repositories" {
 			var repositories []string
 			repositories = github.ListUserRepos(client, user, 10)
-			fmt.Println(repositories)
+			for index, reponame := range repositories {
+				fmt.Println(index+1, reponame)
+			}
 		} else if action == "create" {
 			var repositories *meta.Repository
 			repositories = github.CreateRepo(client, org)
