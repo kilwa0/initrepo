@@ -14,7 +14,8 @@ func main() {
 	flag.StringVar(&token, "token", "", "Github secret token")
 	flag.StringVar(&user, "user", "", "Github User")
 	flag.StringVar(&org, "organization", "", "Gihub Organization, if empty defaults to user")
-	flag.StringVar(&action, "action", "repositories", "usage")
+	flag.StringVar(&action, "action", "repositories", `usage:
+[create, delete, repositories]`)
 	flag.StringVar(&host, "host", "", "Github Host")
 	flag.Parse()
 	ctx := context.Background()
