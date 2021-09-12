@@ -19,51 +19,27 @@ func main() {
 	flag.StringVar(&host, "host", "", "Github Host")
 	flag.Parse()
 	ctx := context.Background()
-
+	var client *meta.Client
 	if host == "" {
-		client := github.Connect(token)
-		usr, _, err := client.Users.Get(ctx, "")
-		if err != nil {
-			log.Printf("[ERROR] %s", err)
-		}
-		if action == "repositories" {
-			var repositories []string
-			repositories = github.ListUserRepos(client, user, 10)
-			for index, reponame := range repositories {
-				fmt.Println(index+1, reponame)
-			}
-		} else if action == "create" {
-			var repositories *meta.Repository
-			repositories = github.CreateRepo(client, org)
-			fmt.Printf(`
-git init
-git add -A
-git commit -m "first commit"
-git branch -M main
-git remote add origin git@github.com:%s/%s.git
-git push -u origin main
-`, *usr.Login, repositories.GetName())
-		} else if action == "delete" {
-			var repositories *meta.Response
-			repositories = github.DeleteRepo(client, org)
-			if repositories.StatusCode == 204 {
-				fmt.Printf("Deleted\n")
-			}
-		}
+		client = github.Connect(token)
+		host = "github.com"
 	} else {
-		client := github.ConnectEnterprise(token, "https://"+host)
-		usr, _, err := client.Users.Get(ctx, "")
-		if err != nil {
-			log.Printf("[ERROR] %s", err)
+		client = github.ConnectEnterprise(token, "https://"+host)
+	}
+	usr, _, err := client.Users.Get(ctx, "")
+	if err != nil {
+		log.Printf("[ERROR] %s", err)
+	}
+	if action == "repositories" {
+		var repositories []string
+		repositories = github.ListUserRepos(client, user, 10)
+		for index, reponame := range repositories {
+			fmt.Println(index+1, reponame)
 		}
-		if action == "repositories" {
-			var repositories []string
-			repositories = github.ListUserRepos(client, user, 10)
-			fmt.Println(repositories)
-		} else if action == "create" {
-			var repositories *meta.Repository
-			repositories = github.CreateRepo(client, org)
-			fmt.Printf(`
+	} else if action == "create" {
+		var repositories *meta.Repository
+		repositories = github.CreateRepo(client, org)
+		fmt.Printf(`
 git init
 git add -A
 git commit -m "first commit"
@@ -71,12 +47,11 @@ git branch -M main
 git remote add origin git@%s:%s/%s.git
 git push -u origin main
 `, host, *usr.Login, repositories.GetName())
-		} else if action == "delete" {
-			var repositories *meta.Response
-			repositories = github.DeleteRepo(client, org)
-			if repositories.StatusCode == 204 {
-				fmt.Printf("Deleted\n")
-			}
+	} else if action == "delete" {
+		var repositories *meta.Response
+		repositories = github.DeleteRepo(client, org)
+		if repositories.StatusCode == 204 {
+			fmt.Printf("Deleted\n")
 		}
 	}
 }
