@@ -30,13 +30,14 @@ func main() {
 	if err != nil {
 		log.Printf("[ERROR] %s", err)
 	}
-	if action == "repositories" {
+	switch action {
+	case "repositories":
 		var repositories []string
 		repositories = github.ListUserRepos(client, user, 10)
 		for index, reponame := range repositories {
 			fmt.Println(index+1, reponame)
 		}
-	} else if action == "create" {
+	case "create":
 		var repositories *meta.Repository
 		repositories = github.CreateRepo(client, org)
 		fmt.Printf(`
@@ -46,8 +47,8 @@ git commit -m "first commit"
 git branch -M main
 git remote add origin git@%s:%s/%s.git
 git push -u origin main
-`, host, *usr.Login, repositories.GetName())
-	} else if action == "delete" {
+		`, host, *usr.Login, repositories.GetName())
+	case "delete":
 		var repositories *meta.Response
 		repositories = github.DeleteRepo(client, org)
 		if repositories.StatusCode == 204 {
